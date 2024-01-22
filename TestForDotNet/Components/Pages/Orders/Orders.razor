@@ -1,0 +1,91 @@
+﻿@page "/orders"
+
+@using TestForDotNet.Repository.Models
+@rendermode InteractiveServer
+
+<h2>Orders</h2>
+<table class="table table-responsive table-striped">
+    <thead>
+        <tr>
+            <th>Order Name</th>
+            <th>State</th>
+            <td>Action</td>
+            <td>Edit</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in OrderList)
+        {
+            <tr class="main-table">
+                <td scope="col">@item.OrderName</td>
+                <td scope="col">@item.State</td>
+                <td scope="col">
+                    <button type="button" class="@SwitchButtonOrderWindow(item)" @onclick="() => ChangeOrderExpanded(item)">Show window information</button>
+                </td>
+                <td scope="col">
+                    <a href="@($"orders/edit/{item.OrderId}")"><i class="bi bi-pen"></i></a>
+                    <a href="javascript: void(0);" @onclick="() => DeleteOrder(item)"><i class="bi bi-trash"></i></a>
+                </td>
+            </tr>
+            <tr class="@(item.isExpanded ? "" : "d-none")">
+                <td colspan="3">
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Quantity Of Windows</th>
+                                <th>Total Sub-Elements</th>
+                                <td>Action</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (item != null && item.Windows != null)
+                            {
+                                @foreach (var window in item.Windows)
+                                {
+                                    <tr>
+                                        <td>@window.QuantityOfWindows</td>
+                                        <td>@window.TotalSubElements</td>
+                                        <td>
+                                            <button type="button" class="@SwitchButtonColorWindow(window)" @onclick="() => ChangeWindowExpanded(window)">
+                                                <span class="bi bi-search">Show sub elements</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr class="@(window.isExpanded ? "" : "d-none")">
+                                        <td colspan="3">
+                                            <table class="table table-condensed">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Sub element Type</th>
+                                                        <th>Width</th>
+                                                        <th>Height</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @if (window != null && window.SubElements != null && window.SubElements.Any())
+                                                    {
+                                                        @foreach (var subElement in window.SubElements)
+                                                        {
+                                                            <tr>
+                                                                <td>@subElement.SubElementType</td>
+                                                                <td>@subElement.Width</td>
+                                                                <td>@subElement.Height</td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<div class="form-group">
+    <button id="createOrder" name="createOrder" class="btn btn-success" @onclick="CreateOrder">Create Order</button>
+</div>

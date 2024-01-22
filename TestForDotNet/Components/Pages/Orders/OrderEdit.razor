@@ -1,0 +1,126 @@
+﻿@page "/orders/edit/{OrderId}"
+
+@using TestForDotNet.Core.DTOs
+@using TestForDotNet.ViewModel
+@using UzduotysNet.Repository.Enums
+@rendermode InteractiveServer
+
+@if (string.IsNullOrWhiteSpace(OrderId))
+{
+    <h1>OrderId is not provided</h1>
+}
+
+<EditForm Model="@_orderViewModel" id="orderEditForm" OnSubmit="OnSave">
+    <h3>Edit Order</h3>
+    <hr />
+
+    <div class="form-group row">
+        <label for="orderName" class="col-sm-2 col-form-label">
+            Order Name
+        </label>
+        <div class="col-sm-10">
+            <InputText id="orderName" class="form-control" placeholder="Order Name"
+                       ValueExpression="@(()=> _orderViewModel.OrderName)"
+                       Value="@_orderViewModel.OrderName"
+                       ValueChanged="(string orderName) => OnOrderNameChanged(orderName)" />
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="orderState" class="col-sm-2 col-form-label">
+            Order State
+        </label>
+        <div class="col-sm-10">
+            <InputText id="orderState" class="form-control" placeholder="Order State"
+                       ValueExpression="@(()=> _orderViewModel.State)"
+                       Value="@_orderViewModel.State"
+                       ValueChanged="(string orderState) => OnOrderStateChanged(orderState)" />
+        </div>
+    </div>
+
+    @foreach (var window in _orderViewModel?.Windows?.Where(x => !x.IsDeleted) ?? new List<WindowViewModel>())
+    {
+        <table class="table table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Quantity Of Windows</th>
+                    <th scope="col">Total Sub Elements</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <InputNumber id="quantityofwindows" class="form-control" placeholder="Quantity Of Windows"
+                                     ValueExpression="@(()=> window.QuantityOfWindows)"
+                                     Value="@window.QuantityOfWindows"
+                                     ValueChanged="(int quantity) => OnWindowQuantityChanged(quantity, window)" />
+                    </td>
+                    <td>
+                        <span class="form-control">@((window?.SubElements?.Count) ?? 0)</span>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-primary" @onclick="() => AddSubElement(window)">Add Sub Element</button>
+                    </td>
+                    <td>
+                        <a href="javascript: void(0);" @onclick="() => DeleteWindow(window)"><i class="bi bi-trash"></i></a>
+                    </td>
+                </tr>
+                <tr class="@(window?.SubElements?.Any() == true ? "" : "d-none")">
+                    <td colspan="3">
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Sub Element Type</th>
+                                    <th>Width</th>
+                                    <th>Height</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var subElement in window?.SubElements.Where(x => !x.IsDeleted) ?? new List<SubElementDTO>())
+                                {
+                                    <tr>
+                                        <td>
+                                            <InputSelect ValueExpression="@(()=> subElement.SubElementType)"
+                                                         Value="@subElement.SubElementType"
+                                                         ValueChanged="(SubElementTypeEnum e) => OnSubElementTypeChanged(e, subElement, window)">
+                                                @foreach (var subElementType in Enum.GetValues(typeof(SubElementTypeEnum)))
+                                                {
+                                                    <option value="@subElementType">@subElementType</option>
+                                                }
+                                            </InputSelect>
+                                        </td>
+                                        <td>
+                                            <InputNumber id="subelementwidth" class="form-control" placeholder="Sub Element Width"
+                                                         ValueExpression="@(()=> subElement.Width)"
+                                                         Value="@subElement.Width"
+                                                         ValueChanged="(double width) => OnSubElementWidthChanged(width, subElement, window)" />
+                                        </td>
+                                        <td>
+                                            <InputNumber id="subelementheight" class="form-control" placeholder="Sub Element Height"
+                                                         ValueExpression="@(()=> subElement.Height)"
+                                                         Value="@subElement.Height"
+                                                         ValueChanged="(double height) => OnSubElementHeigthChanged(height, subElement, window)" />
+                                        </td>
+                                        <td>
+                                            <a href="javascript: void(0);" @onclick="() => DeleteSubElement(window, subElement)"><i class="bi bi-trash"></i></a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    }
+
+    <div class="form-group row">
+        <div class="col-sm-10">
+            <Button type="button" class="btn btn-success" @onclick="@AddWindow">Add Window</Button>
+        </div>
+    </div>
+
+    <button type="submit" form="orderEditForm" class="btn btn-primary">Save</button>
+</EditForm>
